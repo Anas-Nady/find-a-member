@@ -184,26 +184,26 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center font-arabic"
+      className="flex flex-col items-center min-h-screen p-8 text-white bg-gray-900 font-arabic"
       dir="rtl"
     >
-      <h1 className="text-3xl font-bold mb-8">إدارة الإدخالات</h1>
+      <h1 className="mb-8 text-3xl font-bold">إدارة الإدخالات</h1>
 
       <form
         onSubmit={editingId ? handleUpdate : handleSubmit}
-        className="mb-8 w-full max-w-6xl"
+        className="w-full max-w-6xl mb-8"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
             <input
               type="text"
               placeholder="الاسم"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-gray-700 p-2 rounded text-right w-full"
+              className="w-full p-2 text-right bg-gray-700 rounded"
             />
             {nameError && (
-              <p className="text-red-500 text-sm mt-1">{nameError}</p>
+              <p className="mt-1 text-sm text-red-500">{nameError}</p>
             )}
           </div>
           <div>
@@ -214,18 +214,18 @@ export default function Home() {
               onChange={(e) =>
                 setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))
               }
-              className="bg-gray-700 p-2 rounded text-right w-full"
+              className="w-full p-2 text-right bg-gray-700 rounded"
               required
             />
             {phoneError && (
-              <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+              <p className="mt-1 text-sm text-red-500">{phoneError}</p>
             )}
           </div>
           <div>
             <select
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
-              className="bg-gray-700 p-2 rounded text-right w-full"
+              className="w-full p-2 text-right bg-gray-700 rounded"
               required
             >
               <option value="">اختر التخصص</option>
@@ -239,7 +239,7 @@ export default function Home() {
         </div>
         <button
           type="submit"
-          className="mt-4 bg-blue-500 px-4 py-2 rounded hover:bg-blue-600"
+          className="px-4 py-2 mt-4 bg-blue-500 rounded hover:bg-blue-600"
         >
           {editingId ? "تحديث الإدخال" : "إضافة إدخال"}
         </button>
@@ -252,20 +252,20 @@ export default function Home() {
               setPhone("");
               setSpecialization("");
             }}
-            className="mt-4 mr-4 bg-gray-500 px-4 py-2 rounded hover:bg-gray-600"
+            className="px-4 py-2 mt-4 mr-4 bg-gray-500 rounded hover:bg-gray-600"
           >
             إلغاء التحرير
           </button>
         )}
       </form>
 
-      <div className="mb-4 w-full max-w-4xl">
+      <div className="w-full max-w-4xl mb-4">
         <input
           type="text"
           placeholder="البحث في الإدخالات..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full focus:outline-none bg-gray-700 p-2 rounded text-right"
+          className="w-full p-2 text-right bg-gray-700 rounded focus:outline-none"
         />
       </div>
 
@@ -296,7 +296,7 @@ export default function Home() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(entry)}
-                      className="text-blue-400 hover:text-blue-300 mr-2"
+                      className="mr-2 text-blue-400 hover:text-blue-300"
                     >
                       تحرير
                     </button>
