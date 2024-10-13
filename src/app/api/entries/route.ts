@@ -79,7 +79,7 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Failed to update user" },
+      { error: "Failed to update user." },
       { status: 500 }
     );
   }
