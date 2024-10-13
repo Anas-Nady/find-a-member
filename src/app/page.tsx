@@ -269,50 +269,71 @@ export default function Home() {
         />
       </div>
 
-      <table className="w-full max-w-4xl">
-        <thead>
-          <tr className="bg-gray-700">
-            <th className="p-2 text-right">الاسم</th>
-            <th className="p-2 text-right">الهاتف</th>
-            <th className="p-2 text-right">التخصص</th>
-            <th className="p-2 text-right">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredEntries.map((entry) => (
-            <tr key={entry.id} className="border-b border-gray-700">
-              <td className="p-2">{entry.name}</td>
-              <td className="p-2">
-                <button
-                  onClick={() => openWhatsApp(entry.phone)}
-                  className="text-green-400 hover:text-green-300"
-                >
-                  {entry.phone}
-                </button>
-              </td>
-              <td className="p-2">{entry.specialization}</td>
-              <td className="p-2">
-                {(entry.ipAddress === userIp || isAdmin) && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(entry)}
-                      className="mr-2 text-blue-400 hover:text-blue-300"
-                    >
-                      تحرير
-                    </button>
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      حذف
-                    </button>
-                  </div>
-                )}
-              </td>
+      <div className="w-full max-w-4xl overflow-x-auto" dir="rtl">
+        <table className="w-full max-w-4xl">
+          <thead className="hidden md:table-header-group">
+            <tr className="bg-gray-700">
+              <th className="p-2 text-right">الاسم</th>
+              <th className="p-2 text-right">الهاتف</th>
+              <th className="p-2 text-right">التخصص</th>
+              <th className="p-2 text-right">الإجراءات</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredEntries.map((entry) => (
+              <tr
+                key={entry.id}
+                className="block border-b border-gray-700 md:table-row"
+              >
+                <td className="block p-2 text-right md:table-cell">
+                  <span className="inline-block ml-2 font-bold md:hidden">
+                    الاسم:
+                  </span>
+                  {entry.name}
+                </td>
+                <td className="block p-2 text-right md:table-cell">
+                  <span className="inline-block ml-2 font-bold md:hidden">
+                    الهاتف:
+                  </span>
+                  <button
+                    onClick={() => openWhatsApp(entry.phone)}
+                    className="text-green-400 hover:text-green-300"
+                  >
+                    {entry.phone}
+                  </button>
+                </td>
+                <td className="block p-2 text-right md:table-cell">
+                  <span className="inline-block ml-2 font-bold md:hidden">
+                    التخصص:
+                  </span>
+                  {entry.specialization}
+                </td>
+                <td className="block p-2 text-right md:table-cell">
+                  <span className="inline-block ml-2 font-bold md:hidden">
+                    الإجراءات:
+                  </span>
+                  {(entry.ipAddress === userIp || isAdmin) && (
+                    <div className="flex justify-end gap-2 md:justify-start">
+                      <button
+                        onClick={() => handleEdit(entry)}
+                        className="mr-2 text-blue-400 hover:text-blue-300"
+                      >
+                        تحرير
+                      </button>
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
