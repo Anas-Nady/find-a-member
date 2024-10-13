@@ -1,96 +1,116 @@
 import { NextResponse } from "next/server";
-import { NextApiRequest } from "next";
-
-interface Entry {
-  id: number;
-  name: string;
-  phone: string;
-  specialization: string;
-  ipAddress: string;
-}
-
-let entries: Entry[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    phone: "123-456-7890",
-    specialization: "Web Development",
-    ipAddress: "127.0.0.1",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    phone: "987-654-3210",
-    specialization: "Mobile Development",
-    ipAddress: "192.168.0.1",
-  },
-];
+import mongoose from "mongoose";
+import User from "@/models/userModel";
 
 const ADMIN_IP = "102.187.214.101";
 
-export async function GET(request: Request) {
-  const { headers } = request;
-  const forwardedFor = headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
+// Connect to MongoDB
+const connectDB = async () => {
+  if (mongoose.connections[0].readyState) return;
+  try {
+    await mongoose.connect(process.env.MONGODB_URI as string);
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error);
+  }
+};
 
-  return NextResponse.json(entries);
+export async function GET(request: Request) {
+  await connectDB();
+
+  try {
+    const users = await User.find({});
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch users" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { headers } = request;
-  const forwardedFor = headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
+  await connectDB();
 
-  const newEntry: Entry = {
-    id: entries.length + 1,
-    ...body,
-    ipAddress: clientIp,
-  };
-  entries.push(newEntry);
-  return NextResponse.json(newEntry, { status: 201 });
+  try {
+    const body = await request.json();
+    const { headers } = request;
+    const forwardedFor = headers.get("x-forwarded-for");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
+
+    const newUser = new User({
+      ...body,
+      ipAddress: clientIp,
+    });
+
+    await newUser.save();
+    return NextResponse.json(newUser, { status: 201 });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return NextResponse.json(
+      { error: "Failed to create user" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(request: Request) {
-  const body = await request.json();
-  const { headers } = request;
-  const forwardedFor = headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
+  await connectDB();
 
-  const index = entries.findIndex(
-    (entry) => entry.id === body.id && entry.ipAddress === clientIp
-  );
+  try {
+    const body = await request.json();
+    const { headers } = request;
+    const forwardedFor = headers.get("x-forwarded-for");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
 
-  if (index !== -1) {
-    entries[index] = { ...entries[index], ...body, ipAddress: clientIp };
-    return NextResponse.json(entries[index], { status: 200 });
-  } else {
+    const user = await User.findOne({ _id: body.id, ipAddress: clientIp });
+
+    if (user) {
+      user.set({ ...body, ipAddress: clientIp });
+      await user.save();
+      return NextResponse.json(user, { status: 200 });
+    } else {
+      return NextResponse.json(
+        { error: "Entry not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+  } catch (error) {
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Entry not found or unauthorized" },
-      { status: 404 }
+      { error: "Failed to update user" },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-  const { headers } = request;
-  const forwardedFor = headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
+  await connectDB();
 
-  const index = entries.findIndex((entry) => entry.id === Number(id));
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const { headers } = request;
+    const forwardedFor = headers.get("x-forwarded-for");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
 
-  if (
-    index !== -1 &&
-    (clientIp === ADMIN_IP || entries[index].ipAddress === clientIp)
-  ) {
-    const deletedEntry = entries.splice(index, 1)[0];
-    return NextResponse.json(deletedEntry, { status: 200 });
-  } else {
+    const user = await User.findById(id);
+
+    if (user && (clientIp === ADMIN_IP || user.ipAddress === clientIp)) {
+      await User.findByIdAndDelete(id);
+      return NextResponse.json(user, { status: 200 });
+    } else {
+      return NextResponse.json(
+        { error: "Entry not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
     return NextResponse.json(
-      { error: "Entry not found or unauthorized" },
-      { status: 404 }
+      { error: "Failed to delete user" },
+      { status: 500 }
     );
   }
 }
