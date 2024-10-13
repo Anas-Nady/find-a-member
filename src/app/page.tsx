@@ -71,8 +71,8 @@ export default function Home() {
     let isValid = true;
 
     // Validate name
-    if (name.length < 8 || name.length > 30) {
-      setNameError("يجب أن يكون الاسم بين 8 و 30 حرفًا");
+    if (name.length < 4 || name.length > 30) {
+      setNameError("يجب أن يكون الاسم بين 4 و 30 حرفًا");
       isValid = false;
     } else {
       setNameError("");
