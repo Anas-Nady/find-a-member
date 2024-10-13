@@ -21,6 +21,26 @@ export default function Home() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [userIp, setUserIp] = useState<string>("");
 
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  const specializations = [
+    "React",
+    "Angular",
+    "Node.js",
+    ".NET",
+    "PHP",
+    "Flutter",
+    "UI/UX",
+    "React Native",
+    "AI",
+    "Data Analysis",
+    "Embedded Systems",
+    "Security",
+    "Network",
+    "Penetration Testing",
+  ];
+
   useEffect(() => {
     fetchEntries();
     fetchUserIp();
@@ -47,8 +67,34 @@ export default function Home() {
     }
   };
 
+  const validateInputs = () => {
+    let isValid = true;
+
+    // Validate name
+    if (name.length < 8 || name.length > 30) {
+      setNameError("يجب أن يكون الاسم بين 8 و 30 حرفًا");
+      isValid = false;
+    } else {
+      setNameError("");
+    }
+
+    // Validate phone (WhatsApp number)
+    const phoneRegex = /^[0-9]{11}$/;
+    if (!phoneRegex.test(phone)) {
+      setPhoneError("يجب أن يكون رقم الواتساب 11 رقمًا بالضبط");
+      isValid = false;
+    } else {
+      setPhoneError("");
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
     try {
       const response = await fetch("/api/entries", {
         method: "POST",
@@ -77,6 +123,9 @@ export default function Home() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateInputs()) {
+      return;
+    }
     try {
       const response = await fetch("/api/entries", {
         method: "PUT",
@@ -145,29 +194,48 @@ export default function Home() {
         className="mb-8 w-full max-w-6xl"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="الاسم"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="bg-gray-700 p-2 rounded text-right"
-          />
-          <input
-            type="tel"
-            placeholder="رقم الواتساب"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="bg-gray-700 p-2 rounded text-right"
-            required
-          />
-          <input
-            type="text"
-            placeholder="التخصص"
-            value={specialization}
-            onChange={(e) => setSpecialization(e.target.value)}
-            className="bg-gray-700 p-2 rounded text-right"
-            required
-          />
+          <div>
+            <input
+              type="text"
+              placeholder="الاسم"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-gray-700 p-2 rounded text-right w-full"
+            />
+            {nameError && (
+              <p className="text-red-500 text-sm mt-1">{nameError}</p>
+            )}
+          </div>
+          <div>
+            <input
+              type="tel"
+              placeholder="رقم الواتساب (11 رقم)"
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))
+              }
+              className="bg-gray-700 p-2 rounded text-right w-full"
+              required
+            />
+            {phoneError && (
+              <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+            )}
+          </div>
+          <div>
+            <select
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+              className="bg-gray-700 p-2 rounded text-right w-full"
+              required
+            >
+              <option value="">اختر التخصص</option>
+              {specializations.map((spec) => (
+                <option key={spec} value={spec}>
+                  {spec}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <button
           type="submit"
