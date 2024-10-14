@@ -10,6 +10,8 @@ interface Entry {
   ipAddress: string;
 }
 
+type LoadingState = "idle" | "loading" | "loaded" | "error";
+
 const ADMIN_IP = "102.187.214.101";
 
 export default function Home() {
@@ -41,19 +43,24 @@ export default function Home() {
     "Penetration Testing",
   ];
 
+  const [loadingState, setLoadingState] = useState<LoadingState>("idle");
+
   useEffect(() => {
     fetchEntries();
     fetchUserIp();
   }, []);
 
   const fetchEntries = async () => {
+    setLoadingState("loading");
     try {
       const response = await fetch("/api/entries");
       const data = await response.json();
       console.log(data);
       setEntries(data);
+      setLoadingState("loaded");
     } catch (error) {
       console.error("Error fetching entries:", error);
+      setLoadingState("error");
     }
   };
 
@@ -269,52 +276,66 @@ export default function Home() {
         />
       </div>
 
-      <div className="w-full max-w-4xl overflow-x-auto" dir="rtl">
-        <table className="w-full max-w-4xl">
-          <thead>
-            <tr className="bg-gray-700">
-              <th className="p-2 text-right">الاسم</th>
-              <th className="p-2 text-right">الهاتف</th>
-              <th className="p-2 text-right">التخصص</th>
-              <th className="p-2 text-right">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredEntries.map((entry) => (
-              <tr key={entry.id} className="border-b border-gray-700">
-                <td className="p-2">{entry.name}</td>
-                <td className="p-2">
-                  <button
-                    onClick={() => openWhatsApp(entry.phone)}
-                    className="text-green-400 hover:text-green-300"
-                  >
-                    {entry.phone}
-                  </button>
-                </td>
-                <td className="p-2">{entry.specialization}</td>
-                <td className="p-2">
-                  {(entry.ipAddress === userIp || isAdmin) && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(entry)}
-                        className="mr-2 text-blue-400 hover:text-blue-300"
-                      >
-                        تحرير
-                      </button>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  )}
-                </td>
+      {loadingState === "loading" && (
+        <div className="flex items-center justify-center my-8">
+          <div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+        </div>
+      )}
+
+      {loadingState === "error" && (
+        <div className="my-8 text-red-500">
+          حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.
+        </div>
+      )}
+
+      {loadingState === "loaded" && (
+        <div className="w-full max-w-4xl overflow-x-auto" dir="rtl">
+          <table className="w-full max-w-4xl">
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="p-2 text-right">الاسم</th>
+                <th className="p-2 text-right">الهاتف</th>
+                <th className="p-2 text-right">التخصص</th>
+                <th className="p-2 text-right">الإجراءات</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filteredEntries.map((entry) => (
+                <tr key={entry.id} className="border-b border-gray-700">
+                  <td className="p-2">{entry.name}</td>
+                  <td className="p-2">
+                    <button
+                      onClick={() => openWhatsApp(entry.phone)}
+                      className="text-green-400 hover:text-green-300"
+                    >
+                      {entry.phone}
+                    </button>
+                  </td>
+                  <td className="p-2">{entry.specialization}</td>
+                  <td className="p-2">
+                    {(entry.ipAddress === userIp || isAdmin) && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(entry)}
+                          className="mr-2 text-blue-400 hover:text-blue-300"
+                        >
+                          تحرير
+                        </button>
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
