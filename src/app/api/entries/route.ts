@@ -55,36 +55,6 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
-  await connectDB();
-
-  try {
-    const body = await request.json();
-    const { headers } = request;
-    const forwardedFor = headers.get("x-forwarded-for");
-    const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
-
-    const user = await User.findOne({ _id: body.id, ipAddress: clientIp });
-
-    if (user) {
-      user.set({ ...body, ipAddress: clientIp });
-      await user.save();
-      return NextResponse.json(user, { status: 200 });
-    } else {
-      return NextResponse.json(
-        { error: "Entry not found or unauthorized" },
-        { status: 404 }
-      );
-    }
-  } catch (error) {
-    console.error("Error updating user:", error);
-    return NextResponse.json(
-      { error: "Failed to update user." },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(request: Request) {
   await connectDB();
 

@@ -1,26 +1,18 @@
 "use client";
 
+import { ObjectId } from "mongoose";
 import { useState, useEffect } from "react";
-
-interface Entry {
-  id: number;
-  name: string;
-  phone: string;
-  specialization: string;
-  ipAddress: string;
-}
 
 type LoadingState = "idle" | "loading" | "loaded" | "error";
 
 const ADMIN_IP = "102.187.214.101";
 
 export default function Home() {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [entries, setEntries] = useState<any[]>([]);
   const [name, setName] = useState("مستخدم");
   const [phone, setPhone] = useState("");
   const [specialization, setSpecialization] = useState("");
   const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [userIp, setUserIp] = useState<string>("");
 
   const [nameError, setNameError] = useState("");
@@ -121,42 +113,6 @@ export default function Home() {
     }
   };
 
-  const handleEdit = (entry: Entry) => {
-    setEditingId(entry.id);
-    setName(entry.name);
-    setPhone(entry.phone);
-    setSpecialization(entry.specialization);
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateInputs()) {
-      return;
-    }
-    try {
-      const response = await fetch("/api/entries", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: editingId, name, phone, specialization }),
-      });
-      if (response.ok) {
-        fetchEntries();
-        setEditingId(null);
-        setName("");
-        setPhone("");
-        setSpecialization("");
-      } else {
-        const errorData = await response.json();
-        console.error("Error updating entry:", errorData.error);
-        alert("You can only edit your own entries.");
-      }
-    } catch (error) {
-      console.error("Error updating entry:", error);
-    }
-  };
-
   const handleDelete = async (id: number) => {
     if (window.confirm("هل أنت متأكد أنك تريد حذف هذا الإدخال؟")) {
       try {
@@ -177,10 +133,12 @@ export default function Home() {
   };
 
   const filteredEntries = entries.filter((entry) =>
-    Object.values(entry).some((value) =>
+    Object.values(entry).some((value: any) =>
       value.toString().toLowerCase().includes(search.toLowerCase())
     )
   );
+
+  console.log(filteredEntries);
 
   const openWhatsApp = (phone: string) => {
     const formattedPhone = phone.replace(/[^\d]/g, "");
@@ -196,10 +154,7 @@ export default function Home() {
     >
       <h1 className="mb-8 text-3xl font-bold">إدارة الإدخالات</h1>
 
-      <form
-        onSubmit={editingId ? handleUpdate : handleSubmit}
-        className="w-full max-w-6xl mb-8"
-      >
+      <form onSubmit={handleSubmit} className="w-full max-w-6xl mb-8">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
             <input
@@ -248,22 +203,8 @@ export default function Home() {
           type="submit"
           className="px-4 py-2 mt-4 bg-blue-500 rounded hover:bg-blue-600"
         >
-          {editingId ? "تحديث الإدخال" : "إضافة إدخال"}
+          {"إضافة إدخال"}
         </button>
-        {editingId && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditingId(null);
-              setName("");
-              setPhone("");
-              setSpecialization("");
-            }}
-            className="px-4 py-2 mt-4 mr-4 bg-gray-500 rounded hover:bg-gray-600"
-          >
-            إلغاء التحرير
-          </button>
-        )}
       </form>
 
       <div className="w-full max-w-4xl mb-4">
@@ -301,7 +242,7 @@ export default function Home() {
             </thead>
             <tbody>
               {filteredEntries.map((entry) => (
-                <tr key={entry.id} className="border-b border-gray-700">
+                <tr key={entry._id} className="border-b border-gray-700">
                   <td className="p-2">{entry.name}</td>
                   <td className="p-2">
                     <button
@@ -316,13 +257,7 @@ export default function Home() {
                     {(entry.ipAddress === userIp || isAdmin) && (
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleEdit(entry)}
-                          className="mr-2 text-blue-400 hover:text-blue-300"
-                        >
-                          تحرير
-                        </button>
-                        <button
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={() => handleDelete(entry._id)}
                           className="text-red-400 hover:text-red-300"
                         >
                           حذف
