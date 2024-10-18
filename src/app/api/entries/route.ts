@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   await connectDB();
 
   try {
-    const users = await User.find({});
+    const users = await User.find({}).sort("createdAt");
     return NextResponse.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
